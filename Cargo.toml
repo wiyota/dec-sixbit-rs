@@ -15,6 +15,9 @@ include = [
     "/LICENSE-MIT",
 ]
 
+documentation = "https://docs.rs/dec-sixbit/"
+repository = "https://github.com/wiyota/dec-sixbit-rs/"
+
 readme = "README.md"
 
 categories = ["encoding", "text-processing"]
