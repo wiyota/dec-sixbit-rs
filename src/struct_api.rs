@@ -8,7 +8,7 @@
 //! - Implements common traits for ease of use.
 //! - Provides both encoding and decoding functionalities.
 
-use crate::{encode::encode, decode::decode, Error};
+use crate::{encode::encode, decode::decode_unchecked, Error};
 use std::fmt;
 
 /// The `DecSixbit` struct stores the encoded bytes and provides methods
@@ -233,8 +233,8 @@ impl DecSixbit {
 
 impl fmt::Display for DecSixbit {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let decoded = decode(&self.bytes, self.len)
-            .expect("invalid SIXBIT data in DecSixbit");
+        // Use decode_unchecked because the TRAILING_SPACE_MARKER byte might have been added at the end
+        let decoded =  decode_unchecked(&self.bytes, self.len);
         write!(f, "{}", decoded)
     }
 }
