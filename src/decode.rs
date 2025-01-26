@@ -13,8 +13,7 @@ use crate::{Error, ASCII_OFFSET, MASK_FOUR_BITS, MASK_SIX_BITS, MASK_TWO_BITS, S
 /// - `len`: The length of the original string.
 ///
 /// # Errors
-/// Returns an [`Error::InvalidSixbitValue`] if any SIXBIT value is outside the valid range (0-63),
-/// or if the decoded bytes do not form a valid UTF-8 string.
+/// Returns an [`Error::InvalidBytesLength`] if `bytes.len()` and `len` are inconsistent.
 ///
 /// # Examples
 ///

@@ -24,9 +24,10 @@ pub enum Error {
     /// Occurs when the input string contains a character outside the valid SIXBIT range (ASCII 32-95).
     #[error("invalid character in input (must be ASCII 32-95)")]
     InvalidCharacter,
-    /// Occurs when decoding encounters a SIXBIT value outside the valid range (0-63).
-    #[error("invalid SIXBIT value (must be 0-63): {0}")]
-    InvalidSixbitValue(u8),
+
+    /// Occurs when decoding fails due to inconsistent input bytes and length.
+    #[error("input bytes and length are inconsistent")]
+    InvalidBytesLength,
 }
 
 #[cfg(test)]
