@@ -346,8 +346,15 @@ mod tests {
     #[cfg(feature = "with-struct")]
     #[test]
     fn test_trailing_spaces() {
-        let input = "TEST   ";
+        let input = "TESTTEST";
         let sixbit = DecSixbit::new(input).unwrap();
-        assert_eq!(sixbit.to_string(), "TEST   ");
+        assert_eq!(sixbit.to_string(), "TESTTEST");
+        assert_eq!(sixbit.as_bytes().len(), 6);
+
+        let input = "TEST    ";
+        let sixbit = DecSixbit::new(input).unwrap();
+        assert_eq!(sixbit.to_string(), "TEST    ");
+        // The last byte contains DecSixbit::TRAILING_SPACE_MARKER
+        assert_eq!(sixbit.as_bytes().len(), 7);
     }
 }
