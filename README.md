@@ -33,7 +33,7 @@ Add `dec-sixbit` to your project's `Cargo.toml`:
 
 ```toml
 [dependencies]
-dec-sixbit = "0.1.1" # Replace with the latest version
+dec-sixbit = "0.1.2" # Replace with the latest version
 ```
 
 ## Usage
