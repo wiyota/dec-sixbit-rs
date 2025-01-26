@@ -14,8 +14,8 @@ pub use struct_api::DecSixbit;
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     /// Occurs when the input string contains a character outside the valid SIXBIT range (ASCII 32-95).
-    #[error("invalid character in input (must be ASCII 32-95): {0}")]
-    InvalidCharacter(char),
+    #[error("invalid character in input (must be ASCII 32-95)")]
+    InvalidCharacter,
     /// Occurs when decoding encounters a SIXBIT value outside the valid range (0-63).
     #[error("invalid SIXBIT value (must be 0-63): {0}")]
     InvalidSixbitValue(u8),
@@ -138,19 +138,19 @@ mod tests {
         // Test character below range
         assert!(matches!(
             encode("\x1F"),
-            Err(Error::InvalidCharacter('\x1F'))
+            Err(Error::InvalidCharacter)
         ));
 
         // Test character above range
         assert!(matches!(
             encode("abc"),
-            Err(Error::InvalidCharacter('a'))
+            Err(Error::InvalidCharacter)
         ));
 
         // Test non-ASCII character
         assert!(matches!(
             encode("こんにちは"),
-            Err(Error::InvalidCharacter('こ'))
+            Err(Error::InvalidCharacter)
         ));
     }
 

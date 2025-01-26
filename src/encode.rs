@@ -39,7 +39,7 @@ pub fn encode(str: &str) -> Result<(Vec<u8>, usize), Error> {
         // Validate characters
         for &code in chunk {
             if !(32..=95).contains(&code) {
-                return Err(Error::InvalidCharacter(code as char));
+                return Err(Error::InvalidCharacter);
             }
         }
 
@@ -68,7 +68,7 @@ pub fn encode(str: &str) -> Result<(Vec<u8>, usize), Error> {
                 // Validate characters
                 for &code in chunk {
                     if !(32..=95).contains(&code) {
-                        return Err(Error::InvalidCharacter(code as char));
+                        return Err(Error::InvalidCharacter);
                     }
                 }
 
@@ -86,7 +86,7 @@ pub fn encode(str: &str) -> Result<(Vec<u8>, usize), Error> {
                 // Validate characters
                 for &code in chunk {
                     if !(32..=95).contains(&code) {
-                        return Err(Error::InvalidCharacter(code as char));
+                        return Err(Error::InvalidCharacter);
                     }
                 }
 
@@ -102,7 +102,7 @@ pub fn encode(str: &str) -> Result<(Vec<u8>, usize), Error> {
                 // Validate character
                 let code = chunk[0];
                 if !(32..=95).contains(&code) {
-                    return Err(Error::InvalidCharacter(code as char));
+                    return Err(Error::InvalidCharacter);
                 }
 
                 // Convert to SIXBIT value by subtracting 32
