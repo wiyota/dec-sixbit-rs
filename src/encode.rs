@@ -4,7 +4,7 @@
 //! to ensure all characters are within the valid SIXBIT range, while the unsafe functions assume the input
 //! is already valid for increased performance.
 
-use crate::Error;
+use crate::{Error, MASK_FOUR_BITS, MASK_TWO_BITS, ASCII_OFFSET, SHIFT_TWO_BITS, SHIFT_FOUR_BITS, SHIFT_SIX_BITS};
 
 /// This function converts the input string into a compact SIXBIT-encoded byte vector and returns the
 /// encoded bytes along with the original string length.
@@ -42,23 +42,23 @@ pub fn encode(str: &str) -> Result<(Vec<u8>, usize), Error> {
 
         // Validate characters
         for &code in chunk {
-            if !(32..=95).contains(&code) {
+            if !(ASCII_OFFSET..=95).contains(&code) {
                 return Err(Error::InvalidCharacter);
             }
         }
 
-        // Convert to SIXBIT values by subtracting 32
-        let a = chunk[0] - 32;
-        let b = chunk[1] - 32;
-        let c = chunk[2] - 32;
-        let d = chunk[3] - 32;
+        // Convert to SIXBIT values by subtracting ASCII_OFFSET
+        let a = chunk[0] - ASCII_OFFSET;
+        let b = chunk[1] - ASCII_OFFSET;
+        let c = chunk[2] - ASCII_OFFSET;
+        let d = chunk[3] - ASCII_OFFSET;
 
         let byte_idx = chunk_idx * 3;
 
         // Pack 4 SIXBIT values into 3 bytes
-        bytes[byte_idx] = (a << 2) | (b >> 4);
-        bytes[byte_idx + 1] = ((b & 0b1111) << 4) | (c >> 2);
-        bytes[byte_idx + 2] = ((c & 0b11) << 6) | d;
+        bytes[byte_idx] = (a << SHIFT_TWO_BITS) | (b >> SHIFT_FOUR_BITS);
+        bytes[byte_idx + 1] = ((b & MASK_FOUR_BITS) << SHIFT_FOUR_BITS) | (c >> SHIFT_TWO_BITS);
+        bytes[byte_idx + 2] = ((c & MASK_TWO_BITS) << SHIFT_SIX_BITS) | d;
     }
 
     // Handle the remaining 1-3 characters, if any
@@ -71,49 +71,49 @@ pub fn encode(str: &str) -> Result<(Vec<u8>, usize), Error> {
             3 => {
                 // Validate characters
                 for &code in chunk {
-                    if !(32..=95).contains(&code) {
+                    if !(ASCII_OFFSET..=95).contains(&code) {
                         return Err(Error::InvalidCharacter);
                     }
                 }
 
-                // Convert to SIXBIT values by subtracting 32
-                let a = chunk[0] - 32;
-                let b = chunk[1] - 32;
-                let c = chunk[2] - 32;
+                // Convert to SIXBIT values by subtracting ASCII_OFFSET
+                let a = chunk[0] - ASCII_OFFSET;
+                let b = chunk[1] - ASCII_OFFSET;
+                let c = chunk[2] - ASCII_OFFSET;
 
                 // Pack 3 SIXBIT values into 2.25 bytes (rounded up to 3 bytes)
-                bytes[byte_idx] = (a << 2) | (b >> 4);
-                bytes[byte_idx + 1] = ((b & 0b1111) << 4) | (c >> 2);
-                bytes[byte_idx + 2] = (c & 0b11) << 6;
+                bytes[byte_idx] = (a << SHIFT_TWO_BITS) | (b >> SHIFT_FOUR_BITS);
+                bytes[byte_idx + 1] = ((b & MASK_FOUR_BITS) << SHIFT_FOUR_BITS) | (c >> SHIFT_TWO_BITS);
+                bytes[byte_idx + 2] = (c & MASK_TWO_BITS) << SHIFT_SIX_BITS;
             },
             2 => {
                 // Validate characters
                 for &code in chunk {
-                    if !(32..=95).contains(&code) {
+                    if !(ASCII_OFFSET..=95).contains(&code) {
                         return Err(Error::InvalidCharacter);
                     }
                 }
 
-                // Convert to SIXBIT values by subtracting 32
-                let a = chunk[0] - 32;
-                let b = chunk[1] - 32;
+                // Convert to SIXBIT values by subtracting ASCII_OFFSET
+                let a = chunk[0] - ASCII_OFFSET;
+                let b = chunk[1] - ASCII_OFFSET;
 
                 // Pack 2 SIXBIT values into 1.5 bytes (rounded up to 2 bytes)
-                bytes[byte_idx] = (a << 2) | (b >> 4);
-                bytes[byte_idx + 1] = (b & 0b1111) << 4;
+                bytes[byte_idx] = (a << SHIFT_TWO_BITS) | (b >> SHIFT_FOUR_BITS);
+                bytes[byte_idx + 1] = (b & MASK_FOUR_BITS) << SHIFT_FOUR_BITS;
             },
             1 => {
                 // Validate character
                 let code = chunk[0];
-                if !(32..=95).contains(&code) {
+                if !(ASCII_OFFSET..=95).contains(&code) {
                     return Err(Error::InvalidCharacter);
                 }
 
-                // Convert to SIXBIT value by subtracting 32
-                let a = code - 32;
+                // Convert to SIXBIT value by subtracting ASCII_OFFSET
+                let a = code - ASCII_OFFSET;
 
                 // Pack 1 SIXBIT value into 0.75 bytes (rounded up to 1 byte)
-                bytes[byte_idx] = a << 2;
+                bytes[byte_idx] = a << SHIFT_TWO_BITS;
             },
             _ => unreachable!(),
         }
@@ -150,18 +150,18 @@ pub fn encode_unchecked(str: &str) -> (Vec<u8>, usize) {
         let start = chunk_idx * 4;
         let chunk = &str.as_bytes()[start..start + 4];
 
-        // Convert to SIXBIT values by subtracting 32 directly
-        let a = chunk[0] - 32;
-        let b = chunk[1] - 32;
-        let c = chunk[2] - 32;
-        let d = chunk[3] - 32;
+        // Convert to SIXBIT values by subtracting ASCII_OFFSET directly
+        let a = chunk[0] - ASCII_OFFSET;
+        let b = chunk[1] - ASCII_OFFSET;
+        let c = chunk[2] - ASCII_OFFSET;
+        let d = chunk[3] - ASCII_OFFSET;
 
         let byte_idx = chunk_idx * 3;
 
         // Pack 4 SIXBIT values into 3 bytes
-        bytes[byte_idx] = (a << 2) | (b >> 4);
-        bytes[byte_idx + 1] = ((b & 0b1111) << 4) | (c >> 2);
-        bytes[byte_idx + 2] = ((c & 0b11) << 6) | d;
+        bytes[byte_idx] = (a << SHIFT_TWO_BITS) | (b >> SHIFT_FOUR_BITS);
+        bytes[byte_idx + 1] = ((b & MASK_FOUR_BITS) << SHIFT_FOUR_BITS) | (c >> SHIFT_TWO_BITS);
+        bytes[byte_idx + 2] = ((c & MASK_TWO_BITS) << SHIFT_SIX_BITS) | d;
     }
 
     // Handle the remaining 1-3 characters, if any
@@ -172,31 +172,31 @@ pub fn encode_unchecked(str: &str) -> (Vec<u8>, usize) {
 
         match chunk.len() {
             3 => {
-                // Convert to SIXBIT values by subtracting 32 directly
-                let a = chunk[0] - 32;
-                let b = chunk[1] - 32;
-                let c = chunk[2] - 32;
+                // Convert to SIXBIT values by subtracting ASCII_OFFSET directly
+                let a = chunk[0] - ASCII_OFFSET;
+                let b = chunk[1] - ASCII_OFFSET;
+                let c = chunk[2] - ASCII_OFFSET;
 
                 // Pack 3 SIXBIT values into 2.25 bytes (rounded up to 3 bytes)
-                bytes[byte_idx] = (a << 2) | (b >> 4);
-                bytes[byte_idx + 1] = ((b & 0b1111) << 4) | (c >> 2);
-                bytes[byte_idx + 2] = (c & 0b11) << 6;
+                bytes[byte_idx] = (a << SHIFT_TWO_BITS) | (b >> SHIFT_FOUR_BITS);
+                bytes[byte_idx + 1] = ((b & MASK_FOUR_BITS) << SHIFT_FOUR_BITS) | (c >> SHIFT_TWO_BITS);
+                bytes[byte_idx + 2] = (c & MASK_TWO_BITS) << SHIFT_SIX_BITS;
             },
             2 => {
-                // Convert to SIXBIT values by subtracting 32 directly
-                let a = chunk[0] - 32;
-                let b = chunk[1] - 32;
+                // Convert to SIXBIT values by subtracting ASCII_OFFSET directly
+                let a = chunk[0] - ASCII_OFFSET;
+                let b = chunk[1] - ASCII_OFFSET;
 
                 // Pack 2 SIXBIT values into 1.5 bytes (rounded up to 2 bytes)
-                bytes[byte_idx] = (a << 2) | (b >> 4);
-                bytes[byte_idx + 1] = (b & 0b1111) << 4;
+                bytes[byte_idx] = (a << SHIFT_TWO_BITS) | (b >> SHIFT_FOUR_BITS);
+                bytes[byte_idx + 1] = (b & MASK_FOUR_BITS) << SHIFT_FOUR_BITS;
             },
             1 => {
-                // Convert to SIXBIT value by subtracting 32 directly
-                let a = chunk[0] - 32;
+                // Convert to SIXBIT value by subtracting ASCII_OFFSET directly
+                let a = chunk[0] - ASCII_OFFSET;
 
                 // Pack 1 SIXBIT value into 0.75 bytes (rounded up to 1 byte)
-                bytes[byte_idx] = a << 2;
+                bytes[byte_idx] = a << SHIFT_TWO_BITS;
             },
             _ => unreachable!(),
         }

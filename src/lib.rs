@@ -10,6 +10,14 @@ pub use decode::{decode, decode_unchecked};
 #[cfg(feature = "with-struct")]
 pub use struct_api::DecSixbit;
 
+const MASK_TWO_BITS: u8 = 0b11;
+const MASK_FOUR_BITS: u8 = 0b1111;
+const MASK_SIX_BITS: u8 = 0b111111;
+const SHIFT_TWO_BITS: u8 = 2;
+const SHIFT_FOUR_BITS: u8 = 4;
+const SHIFT_SIX_BITS: u8 = 6;
+const ASCII_OFFSET: u8 = 32;
+
 /// Represents errors that can occur during encoding or decoding operations.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, thiserror::Error)]
 pub enum Error {

@@ -4,7 +4,7 @@
 //! to ensure all SIXBIT values are within the valid range, while the unsafe functions assume the input
 //! is already valid for increased performance.
 
-use crate::Error;
+use crate::{Error, ASCII_OFFSET, MASK_FOUR_BITS, MASK_SIX_BITS, MASK_TWO_BITS, SHIFT_FOUR_BITS, SHIFT_SIX_BITS, SHIFT_TWO_BITS};
 
 /// This function converts a slice of SIXBIT-encoded bytes into the original string based on the provided length.
 ///
