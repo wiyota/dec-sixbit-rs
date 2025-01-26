@@ -26,69 +26,21 @@ use crate::{Error, ASCII_OFFSET, MASK_FOUR_BITS, MASK_SIX_BITS, MASK_TWO_BITS, S
 /// assert_eq!(decoded_string, input);
 /// ```
 pub fn decode(bytes: &[u8], len: usize) -> Result<String, Error> {
-    if len == 0 {
-        return Ok(String::new());
-    }
+    let bytes_len = bytes.len();
 
-    let mut result = Vec::with_capacity(len);
-
-    let full_chunks = len / 4;
-    let remaining_chars = len % 4;
-
-    for chunk_idx in 0..full_chunks {
-        let byte_idx = chunk_idx * 3;
-
-        let val1 = bytes[byte_idx] >> 2;
-        let val2 = ((bytes[byte_idx] & 0b11) << 4) | (bytes[byte_idx + 1] >> 4);
-        let val3 = ((bytes[byte_idx + 1] & 0b1111) << 2) | (bytes[byte_idx + 2] >> 6);
-        let val4 = bytes[byte_idx + 2] & 0b111111;
-
-        for &val in &[val1, val2, val3, val4] {
-            if val > 63 {
-                return Err(Error::InvalidSixbitValue(val));
-            }
-            result.push(val + 32);
+    if bytes_len == 0 {
+        if len == 0 {
+            return Ok(String::new());
+        } else {
+            return Err(Error::InvalidBytesLength);
         }
     }
 
-    // Handle remaining characters
-    if remaining_chars > 0 {
-        let start_byte = full_chunks * 3;
-        let remaining_bytes = &bytes[start_byte..];
-
-        match remaining_chars {
-            1 => {
-                let val1 = remaining_bytes[0] >> 2;
-                if val1 > 63 {
-                    return Err(Error::InvalidSixbitValue(val1));
-                }
-                result.push(val1 + 32);
-            },
-            2 => {
-                let val1 = remaining_bytes[0] >> 2;
-                let val2 = ((remaining_bytes[0] & 0b11) << 4) | (remaining_bytes[1] >> 4);
-                if val1 > 63 || val2 > 63 {
-                    return Err(Error::InvalidSixbitValue(0));
-                }
-                result.push(val1 + 32);
-                result.push(val2 + 32);
-            },
-            3 => {
-                let val1 = remaining_bytes[0] >> 2;
-                let val2 = ((remaining_bytes[0] & 0b11) << 4) | (remaining_bytes[1] >> 4);
-                let val3 = ((remaining_bytes[1] & 0b1111) << 2) | (remaining_bytes[2] >> 6);
-                if val1 > 63 || val2 > 63 || val3 > 63 {
-                    return Err(Error::InvalidSixbitValue(0));
-                }
-                result.push(val1 + 32);
-                result.push(val2 + 32);
-                result.push(val3 + 32);
-            },
-            _ => unreachable!(),
-        }
+    if bytes_len != (len * 6 + 7) / 8 {
+        return Err(Error::InvalidBytesLength);
     }
 
-    Ok(String::from_utf8(result).unwrap())
+    Ok(decode_core(bytes, len))
 }
 
 /// This function performs decoding without validating whether the SIXBIT values are within the
@@ -97,7 +49,6 @@ pub fn decode(bytes: &[u8], len: usize) -> Result<String, Error> {
 ///
 /// # Safety
 /// The `bytes` slice must contain valid SIXBIT-encoded data:
-/// - All SIXBIT values must be within 0-63.
 /// - The `len` must accurately reflect the number of original characters.
 ///
 /// # Parameters
@@ -122,23 +73,21 @@ pub fn decode_unchecked(bytes: &[u8], len: usize) -> String {
         return String::new();
     }
 
-    let mut result = Vec::with_capacity(len);
+    decode_core(bytes, len)
+}
 
+fn decode_core(bytes: &[u8], len: usize) -> String {
+    let mut result = Vec::with_capacity(len);
     let full_chunks = len / 4;
     let remaining_chars = len % 4;
 
     for chunk_idx in 0..full_chunks {
         let byte_idx = chunk_idx * 3;
 
-        let val1 = bytes[byte_idx] >> 2;
-        let val2 = ((bytes[byte_idx] & 0b11) << 4) | (bytes[byte_idx + 1] >> 4);
-        let val3 = ((bytes[byte_idx + 1] & 0b1111) << 2) | (bytes[byte_idx + 2] >> 6);
-        let val4 = bytes[byte_idx + 2] & 0b111111;
-
-        result.push(val1 + 32);
-        result.push(val2 + 32);
-        result.push(val3 + 32);
-        result.push(val4 + 32);
+        push_first_six_bits(bytes, byte_idx, &mut result);
+        push_second_six_bits(bytes, byte_idx, &mut result);
+        push_third_six_bits(bytes, byte_idx, &mut result);
+        push_fourth_six_bits(bytes, byte_idx, &mut result);
     }
 
     // Handle remaining characters
@@ -148,27 +97,46 @@ pub fn decode_unchecked(bytes: &[u8], len: usize) -> String {
 
         match remaining_chars {
             1 => {
-                let val1 = remaining_bytes[0] >> 2;
-                result.push(val1 + 32);
+                push_first_six_bits(remaining_bytes, 0, &mut result);
             },
             2 => {
-                let val1 = remaining_bytes[0] >> 2;
-                let val2 = ((remaining_bytes[0] & 0b11) << 4) | (remaining_bytes[1] >> 4);
-                result.push(val1 + 32);
-                result.push(val2 + 32);
+                push_first_six_bits(remaining_bytes, 0, &mut result);
+                push_second_six_bits(remaining_bytes, 0, &mut result);
             },
             3 => {
-                let val1 = remaining_bytes[0] >> 2;
-                let val2 = ((remaining_bytes[0] & 0b11) << 4) | (remaining_bytes[1] >> 4);
-                let val3 = ((remaining_bytes[1] & 0b1111) << 2) | (remaining_bytes[2] >> 6);
-                result.push(val1 + 32);
-                result.push(val2 + 32);
-                result.push(val3 + 32);
+                push_first_six_bits(remaining_bytes, 0, &mut result);
+                push_second_six_bits(remaining_bytes, 0, &mut result);
+                push_third_six_bits(remaining_bytes, 0, &mut result);
             },
             _ => unreachable!(),
         }
     }
 
-    // SAFETY: The caller must ensure that all values are valid and will form a valid UTF-8 string
-    String::from_utf8_unchecked(result)
+    // SAFETY: Each byte of result is guaranteed to fit to any ASCII printable character
+    unsafe { String::from_utf8_unchecked(result) }
+}
+
+#[inline]
+fn push_first_six_bits(bytes: &[u8], index: usize, vec: &mut Vec<u8>) {
+    let val = bytes[index] >> SHIFT_TWO_BITS;
+    vec.push(val + ASCII_OFFSET);
+}
+
+#[inline]
+fn push_second_six_bits(bytes: &[u8], index: usize, vec: &mut Vec<u8>) {
+    let val = ((bytes[index] & MASK_TWO_BITS) << SHIFT_FOUR_BITS) | (bytes[index + 1] >> SHIFT_FOUR_BITS);
+    vec.push(val + ASCII_OFFSET);
+}
+
+#[inline]
+fn push_third_six_bits(bytes: &[u8], index: usize, vec: &mut Vec<u8>) {
+    let val = ((bytes[index + 1] & MASK_FOUR_BITS) << SHIFT_TWO_BITS) | (bytes[index + 2] >> SHIFT_SIX_BITS);
+    vec.push(val + ASCII_OFFSET);
+}
+
+#[inline]
+fn push_fourth_six_bits(bytes: &[u8], index: usize, vec: &mut Vec<u8>) {
+    let val = bytes[index + 2] & MASK_SIX_BITS;
+    vec.push(val + ASCII_OFFSET);
+}
 }
