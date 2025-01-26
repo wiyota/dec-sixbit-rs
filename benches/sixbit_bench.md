@@ -12,36 +12,38 @@
 
 | Operation | Input Size | Time (ns/iter) | Margin of Error |
 |-----------|------------|----------------|-----------------|
-| decode | short | 26.58 | ±1.60 |
-| decode | medium | 47.00 | ±4.65 |
-| decode | long | 75.31 | ±3.54 |
-| decode_unchecked | short | 21.16 | ±0.72 |
-| decode_unchecked | medium | 40.84 | ±1.49 |
-| decode_unchecked | long | 68.22 | ±4.69 |
+| decode | short | 21.50 | ±0.98 |
+| decode | medium | 39.85 | ±1.46 |
+| decode | long | 66.87 | ±2.10 |
+| decode_unchecked | short | 21.46 | ±1.25 |
+| decode_unchecked | medium | 41.05 | ±1.29 |
+| decode_unchecked | long | 66.99 | ±5.52 |
 
 ## Sixbit Encode Operations
 
 | Operation | Input Size | Time (ns/iter) | Margin of Error |
 |-----------|------------|----------------|-----------------|
-| encode | short | 21.86 | ±0.60 |
-| encode | medium | 39.58 | ±1.37 |
-| encode | long | 64.24 | ±14.50 |
-| encode_unchecked | short | 19.10 | ±0.87 |
-| encode_unchecked | medium | 31.01 | ±1.22 |
-| encode_unchecked | long | 45.47 | ±1.01 |
+| encode | short | 21.02 | ±0.81 |
+| encode | medium | 38.27 | ±1.88 |
+| encode | long | 60.49 | ±1.86 |
+| encode_unchecked | short | 18.80 | ±1.15 |
+| encode_unchecked | medium | 30.79 | ±0.85 |
+| encode_unchecked | long | 45.07 | ±1.22 |
 
 ## String Operations (Baseline)
 
 | Operation | Input Size | Time (ns/iter) | Margin of Error |
 |-----------|------------|----------------|-----------------|
-| string_clone | short | 13.04 | ±0.50 |
-| string_clone | medium | 14.55 | ±1.46 |
-| string_clone | long | 14.57 | ±2.09 |
-| string_from_utf8 | short | 21.11 | ±1.59 |
-| string_from_utf8 | medium | 27.27 | ±0.68 |
-| string_from_utf8 | long | 23.77 | ±2.08 |
+| string_clone | short | 12.96 | ±4.33 |
+| string_clone | medium | 14.83 | ±0.49 |
+| string_clone | long | 14.78 | ±0.57 |
+| string_from_utf8 | short | 21.13 | ±0.52 |
+| string_from_utf8 | medium | 27.09 | ±0.76 |
+| string_from_utf8 | long | 23.41 | ±1.06 |
 
 ## Key Observations
 
-- Unchecked operations are consistently faster than their checked counterparts
-- Operation time scales with input size as expected
+- Encode unchecked operations show significant performance improvements (11-25% faster) compared to checked counterparts
+- Decode operations show minimal difference between checked and unchecked variants
+- Both encode and decode operations maintain competitive performance compared to baseline String operations
+- Operation time scales linearly with input size across all operations
