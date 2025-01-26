@@ -118,7 +118,7 @@ pub fn decode(bytes: &[u8], len: usize) -> Result<String, Error> {
 /// let decoded_string = unsafe { decode_unchecked(&encoded_bytes, length) };
 /// assert_eq!(decoded_string, input);
 /// ```
-pub unsafe fn decode_unchecked(bytes: &[u8], len: usize) -> String {
+pub fn decode_unchecked(bytes: &[u8], len: usize) -> String {
     if len == 0 {
         return String::new();
     }

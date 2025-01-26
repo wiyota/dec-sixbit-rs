@@ -52,12 +52,12 @@ fn main() -> Result<(), dec_sixbit::Error> {
 }
 ```
 
-#### Unsafe Encoding
+#### Unchecked Encoding
 
 If you can guarantee that all characters are within the valid SIXBIT range (ASCII 32-95), you can use the `encode_unchecked` function for performance gains:
 
 ```rust
-unsafe {
+fn main() {
     let input = "HELLO";
     let (encoded_bytes, length) = dec_sixbit::encode_unchecked(input);
     println!("Encoded Bytes: {:?}", encoded_bytes);
@@ -79,12 +79,12 @@ fn main() -> Result<(), dec_sixbit::Error> {
 }
 ```
 
-#### Unsafe Decoding
+#### Unchecked Decoding
 
 For scenarios where you are certain the encoded bytes are valid, use the `decode_unchecked` function:
 
 ```rust
-unsafe {
+fn main() {
     let encoded_bytes = vec![0b10000110, 0b00101000, 0b11100100];
     let length = 4;
     let decoded_string = dec_sixbit::decode_unchecked(&encoded_bytes, length);
@@ -117,8 +117,8 @@ fn main() -> Result<(), dec_sixbit::Error> {
 
 `dec-sixbit` defines a custom `Error` enum to handle various error scenarios:
 
-- `InvalidCharacter(char)`: Triggered when the input string contains characters outside the valid SIXBIT range (ASCII 32-95).
-- `InvalidSixbitValue(u8)`: Occurs when decoding encounters invalid SIXBIT values outside the 0-63 range.
+- `InvalidCharacter`: Triggered when the input string contains characters outside the valid SIXBIT range (ASCII 32-95).
+- `IInvalidBytesLength`: Occurs when decoding encounters iconsistent byte length and string length.
 
 ### Example
 

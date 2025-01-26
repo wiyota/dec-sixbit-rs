@@ -137,7 +137,7 @@ pub fn encode(str: &str) -> Result<(Vec<u8>, usize), Error> {
 /// let input = "HELLO";
 /// let (encoded_bytes, length) = unsafe { encode_unchecked(input) };
 /// ```
-pub unsafe fn encode_unchecked(str: &str) -> (Vec<u8>, usize) {
+pub fn encode_unchecked(str: &str) -> (Vec<u8>, usize) {
     let len = str.len();
     // Every 4 characters need 3 bytes, round up
     let bytes_needed = (len * 3 + 3) / 4;

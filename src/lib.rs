@@ -120,7 +120,7 @@ mod tests {
             let decoded = decode(&bytes, len).unwrap();
             assert_eq!(decoded, input);
 
-            let decoded_unchecked = unsafe { decode_unchecked(&bytes, len) };
+            let decoded_unchecked = decode_unchecked(&bytes, len);
             assert_eq!(decoded_unchecked, input);
 
             #[cfg(feature = "with-struct")]
@@ -163,7 +163,7 @@ mod tests {
         let decoded = decode(&bytes, len).unwrap();
         assert_eq!(decoded, "");
 
-        let decoded_unchecked = unsafe { decode_unchecked(&bytes, len) };
+        let decoded_unchecked = decode_unchecked(&bytes, len);
         assert_eq!(decoded_unchecked, "");
 
         #[cfg(feature = "with-struct")]
@@ -176,7 +176,7 @@ mod tests {
             let decoded = decode(&sixbit.bytes, sixbit.len).unwrap();
             assert_eq!(decoded, "");
 
-            let decoded_unchecked = unsafe { decode_unchecked(&sixbit.bytes, sixbit.len) };
+            let decoded_unchecked = decode_unchecked(&sixbit.bytes, sixbit.len);
             assert_eq!(decoded_unchecked, "");
         }
     }
@@ -235,7 +235,7 @@ mod tests {
         let decoded = decode(&bytes, len).unwrap();
         assert_eq!(decoded, input);
 
-        let decoded_unchecked = unsafe { decode_unchecked(&bytes, len) };
+        let decoded_unchecked = decode_unchecked(&bytes, len);
         assert_eq!(decoded_unchecked, input);
 
         #[cfg(feature = "with-struct")]
@@ -244,7 +244,7 @@ mod tests {
             let decoded = decode::decode(&sixbit.bytes, sixbit.len).unwrap();
             assert_eq!(decoded, input);
 
-            let decoded_unchecked = unsafe { decode_unchecked(&sixbit.bytes, sixbit.len) };
+            let decoded_unchecked = decode_unchecked(&sixbit.bytes, sixbit.len);
             assert_eq!(decoded_unchecked, input);
         }
     }

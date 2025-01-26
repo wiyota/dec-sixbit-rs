@@ -41,7 +41,7 @@ mod benches {
     #[bench]
     fn bench_sixbit_encode_unchecked_short(b: &mut Bencher) {
         b.iter(|| {
-            unsafe { encode_unchecked(SHORT_INPUT) }
+            encode_unchecked(SHORT_INPUT)
         });
     }
 
@@ -62,7 +62,7 @@ mod benches {
     #[bench]
     fn bench_sixbit_encode_unchecked_medium(b: &mut Bencher) {
         b.iter(|| {
-            unsafe { encode_unchecked(MEDIUM_INPUT) }
+            encode_unchecked(MEDIUM_INPUT)
         });
     }
 
@@ -83,7 +83,7 @@ mod benches {
     #[bench]
     fn bench_sixbit_encode_unchecked_long(b: &mut Bencher) {
         b.iter(|| {
-            unsafe { encode_unchecked(LONG_INPUT) }
+            encode_unchecked(LONG_INPUT)
         });
     }
 
@@ -106,9 +106,9 @@ mod benches {
 
     #[bench]
     fn bench_sixbit_decode_unchecked_short(b: &mut Bencher) {
-        let (input, len) = unsafe { encode_unchecked(SHORT_INPUT) };
+        let (input, len) = encode_unchecked(SHORT_INPUT);
         b.iter(|| {
-            unsafe { decode_unchecked(&input, len) }
+            decode_unchecked(&input, len)
         });
     }
 
@@ -130,9 +130,9 @@ mod benches {
 
     #[bench]
     fn bench_sixbit_decode_unchecked_medium(b: &mut Bencher) {
-        let (input, len) = unsafe { encode_unchecked(MEDIUM_INPUT) };
+        let (input, len) = encode_unchecked(MEDIUM_INPUT);
         b.iter(|| {
-            unsafe { decode_unchecked(&input, len) }
+            decode_unchecked(&input, len)
         });
     }
 
@@ -154,9 +154,9 @@ mod benches {
 
     #[bench]
     fn bench_sixbit_decode_unchecked_long(b: &mut Bencher) {
-        let (input, len) = unsafe { encode_unchecked(LONG_INPUT) };
+        let (input, len) = encode_unchecked(LONG_INPUT);
         b.iter(|| {
-            unsafe { decode_unchecked(&input, len) }
+            decode_unchecked(&input, len)
         });
     }
 }
