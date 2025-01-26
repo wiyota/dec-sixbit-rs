@@ -24,6 +24,10 @@ use crate::Error;
 /// let (encoded_bytes, length) = encode(input).unwrap();
 /// ```
 pub fn encode(str: &str) -> Result<(Vec<u8>, usize), Error> {
+    // Check if input string contains only ASCII characters
+    if !str.is_ascii() {
+        return Err(Error::InvalidCharacter);
+    }
     let len = str.len();
     // Every 4 characters need 3 bytes, round up
     let bytes_needed = (len * 3 + 3) / 4;
