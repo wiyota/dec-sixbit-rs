@@ -105,6 +105,14 @@ impl DecSixbit {
         self.len == 0
     }
 
+    /// Attempts to create a `DecSixbit` instance from a slice of encoded bytes.
+    ///
+    /// # Parameters
+    /// - `bytes`: A slice of bytes containing SIXBIT-encoded data.
+    ///
+    /// # Returns
+    /// - `Ok(Self)` if the slice is successfully parsed.
+    /// - `Err(Error)` if the slice has an invalid format or contains invalid data.
     pub fn try_from_slice(bytes: &[u8]) -> Result<Self, Error> {
         let num_full_blocks = bytes.len() / 3;
         let num_remain_bytes = bytes.len() % 3;
@@ -127,8 +135,99 @@ impl DecSixbit {
         })
     }
 
+    /// Creates a `DecSixbit` instance from a slice of encoded bytes.
+    ///
+    /// # Parameters
+    /// - `bytes`: A slice of bytes containing SIXBIT-encoded data.
+    ///
+    /// # Panics
+    /// - Panics if the slice has an invalid format or contains invalid data.
     pub fn from_slice(bytes: &[u8]) -> Self {
         Self::try_from_slice(bytes).unwrap()
+    }
+
+    /// Gets the character at the specified position.
+    ///
+    /// # Parameters
+    /// - `index`: The position of the character to retrieve.
+    ///
+    /// # Returns
+    /// An `Option<char>` which is `Some(char)` if the index is valid, or `None` otherwise.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use dec_sixbit::DecSixbit;
+    ///
+    /// let sixbit = DecSixbit::new("HELLO").unwrap();
+    /// assert_eq!(sixbit.get(1), Some('E'));
+    /// assert_eq!(sixbit.get(5), None);
+    /// ```
+    pub fn get(&self, index: usize) -> Option<char> {
+        self.to_string().chars().nth(index)
+    }
+
+    /// Checks if the string starts with the given prefix.
+    ///
+    /// # Parameters
+    /// - `prefix`: The prefix string to check.
+    ///
+    /// # Returns
+    /// `true` if the string starts with the given prefix, otherwise `false`.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use dec_sixbit::DecSixbit;
+    ///
+    /// let sixbit = DecSixbit::new("HELLO").unwrap();
+    /// assert!(sixbit.starts_with("HE"));
+    /// assert!(!sixbit.starts_with("EL"));
+    /// ```
+    pub fn starts_with<P: AsRef<str>>(&self, prefix: P) -> bool {
+        self.to_string().starts_with(prefix.as_ref())
+    }
+
+    /// Checks if the string ends with the given suffix.
+    ///
+    /// # Parameters
+    /// - `suffix`: The suffix string to check.
+    ///
+    /// # Returns
+    /// `true` if the string ends with the given suffix, otherwise `false`.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use dec_sixbit::DecSixbit;
+    ///
+    /// let sixbit = DecSixbit::new("HELLO").unwrap();
+    /// assert!(sixbit.ends_with("LO"));
+    /// assert!(!sixbit.ends_with("HE"));
+    /// ```
+    pub fn ends_with<P: AsRef<str>>(&self, suffix: P) -> bool {
+        self.to_string().ends_with(suffix.as_ref())
+    }
+
+    /// Checks if the string contains the given substring.
+    ///
+    /// # Parameters
+    /// - `substring`: The substring to search for.
+    ///
+    /// # Returns
+    /// `true` if the string contains the given substring, otherwise `false`.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use dec_sixbit::DecSixbit;
+    ///
+    /// let sixbit = DecSixbit::new("HELLO").unwrap();
+    /// assert!(sixbit.contains("ELL"));
+    /// assert!(!sixbit.contains("XYZ"));
+    /// ```
+    pub fn contains<P: AsRef<str>>(&self, substring: P) -> bool {
+        self.to_string().contains(substring.as_ref())
     }
 }
 
