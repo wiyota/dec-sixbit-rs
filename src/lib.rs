@@ -21,7 +21,7 @@ const ASCII_OFFSET: u8 = 32;
 /// Represents errors that can occur during encoding or decoding operations.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, thiserror::Error)]
 pub enum Error {
-    /// Occurs when the input string contains a character outside the valid SIXBIT range (ASCII 32-95).
+    /// Occurs when encoding fails due to invalid character in input.
     #[error("invalid character in input (must be ASCII 32-95)")]
     InvalidCharacter,
 
