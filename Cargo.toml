@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Inomoto, Yota <yota@perforate.org>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
+rust-version = "1.78.0"
 
 description = "Implementation of DEC SIXBIT encoding"
 include = [
@@ -15,6 +16,9 @@ include = [
 ]
 
 readme = "README.md"
+
+categories = ["encoding", "text-processing"]
+keywords = ["sixbit", "dec", "encoding", "text", "serialization"]
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"], optional = true }
