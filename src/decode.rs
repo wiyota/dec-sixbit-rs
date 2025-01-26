@@ -139,4 +139,44 @@ fn push_fourth_six_bits(bytes: &[u8], index: usize, vec: &mut Vec<u8>) {
     let val = bytes[index + 2] & MASK_SIX_BITS;
     vec.push(val + ASCII_OFFSET);
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_decode_empty() {
+        let bytes = [];
+        let decoded = decode(&bytes, 0).unwrap();
+        assert_eq!(decoded, "");
+    }
+
+    #[test]
+    fn test_decode_basic() {
+        let input = "HELLO";
+        let (encoded_bytes, length) = crate::encode(input).unwrap();
+        let decoded = decode(&encoded_bytes, length).unwrap();
+        assert_eq!(decoded, input);
+    }
+
+    #[test]
+    fn test_decode_unchecked() {
+        let input = "WORLD";
+        let (encoded_bytes, length) = crate::encode(input).unwrap();
+        let decoded = decode_unchecked(&encoded_bytes, length);
+        assert_eq!(decoded, input);
+    }
+
+    #[test]
+    fn test_invalid_length() {
+        let bytes = [0u8; 2];
+        assert!(decode(&bytes, 3).is_err());
+    }
+
+    #[test]
+    fn test_not_zero_len_but_empty() {
+        let bytes = [0u8; 0];
+        let decoded = decode(&bytes, 1);
+        assert!(decoded.is_err());
+    }
 }

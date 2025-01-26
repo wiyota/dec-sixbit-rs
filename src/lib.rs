@@ -362,6 +362,7 @@ mod tests {
 
         let input = "TEST    ";
         let sixbit = DecSixbit::new(input).unwrap();
+        assert_eq!(sixbit.len(), 8);
         assert_eq!(sixbit.to_string(), "TEST    ");
         // The last byte contains DecSixbit::TRAILING_SPACE_MARKER
         assert_eq!(sixbit.as_bytes().len(), 7);

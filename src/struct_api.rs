@@ -330,3 +330,226 @@ impl<'de> serde::Deserialize<'de> for DecSixbit {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::DecSixbit;
+    use crate::Error;
+    use std::convert::TryFrom;
+
+    #[test]
+    fn test_new_valid_input() {
+        let input = "HELLO";
+        let sixbit = DecSixbit::new(input).unwrap();
+        assert_eq!(sixbit.len(), input.len());
+        assert_eq!(sixbit.to_string(), input);
+    }
+
+    #[test]
+    fn test_new_empty_string() {
+        let input = "";
+        let sixbit = DecSixbit::new(input).unwrap();
+        assert_eq!(sixbit.len(), 0);
+        assert!(sixbit.is_empty());
+        assert_eq!(sixbit.to_string(), input);
+    }
+
+    #[test]
+    fn test_new_invalid_character() {
+        let input = "HELLO😃";
+        let result = DecSixbit::new(input);
+        assert!(result.is_err());
+        match result {
+            Err(Error::InvalidCharacter { .. }) => (),
+            _ => panic!("Expected InvalidCharacter error"),
+        }
+    }
+
+    #[test]
+    fn test_as_bytes() {
+        let input = "TEST";
+        let sixbit = DecSixbit::new(input).unwrap();
+        let encoded = sixbit.as_bytes();
+        // The exact encoding depends on the `encode` implementation.
+        // Here we check that the bytes are not empty and have the expected length.
+        assert!(!encoded.is_empty());
+        assert_eq!(encoded.len(), 3); // 4 characters -> 3 bytes
+    }
+
+    #[test]
+    fn test_try_from_slice_valid() {
+        let input = "DATA";
+        let sixbit = DecSixbit::new(input).unwrap();
+        let bytes = sixbit.as_bytes();
+        let decoded = DecSixbit::try_from_slice(bytes).unwrap();
+        assert_eq!(sixbit, decoded);
+    }
+
+    #[test]
+    fn test_try_from_slice_with_trailing_marker() {
+        let input = "FOUR";
+        let sixbit = DecSixbit::new(input).unwrap();
+        let mut bytes = sixbit.as_bytes().to_vec();
+        // Manually add TRAILING_SPACE_MARKER
+        bytes.push(DecSixbit::TRAILING_SPACE_MARKER);
+        let decoded = DecSixbit::try_from_slice(&bytes).unwrap();
+        assert_eq!(decoded.len, sixbit.len);
+        assert_eq!(decoded.bytes, bytes);
+    }
+
+    #[test]
+    fn test_get_valid_index() {
+        let input = "WORLD";
+        let sixbit = DecSixbit::new(input).unwrap();
+        assert_eq!(sixbit.get(0), Some('W'));
+        assert_eq!(sixbit.get(4), Some('D'));
+    }
+
+    #[test]
+    fn test_get_invalid_index() {
+        let input = "WORLD";
+        let sixbit = DecSixbit::new(input).unwrap();
+        assert_eq!(sixbit.get(5), None);
+    }
+
+    #[test]
+    fn test_starts_with() {
+        let sixbit = DecSixbit::new("START").unwrap();
+        assert!(sixbit.starts_with("ST"));
+        assert!(!sixbit.starts_with("TA"));
+    }
+
+    #[test]
+    fn test_ends_with() {
+        let sixbit = DecSixbit::new("ENDING").unwrap();
+        assert!(sixbit.ends_with("ING"));
+        assert!(!sixbit.ends_with("END"));
+    }
+
+    #[test]
+    fn test_contains() {
+        let sixbit = DecSixbit::new("CONTAINS").unwrap();
+        assert!(sixbit.contains("TAI"));
+        assert!(!sixbit.contains("XYZ"));
+    }
+
+    #[test]
+    fn test_display_trait() {
+        let input = "DISPLAY";
+        let sixbit = DecSixbit::new(input).unwrap();
+        let displayed = format!("{}", sixbit);
+        assert_eq!(displayed, input);
+    }
+
+    #[test]
+    fn test_from_str() {
+        let input = "FROM_STR";
+        let sixbit: DecSixbit = input.parse().unwrap();
+        assert_eq!(sixbit.to_string(), input);
+    }
+
+    #[test]
+    fn test_try_from_str_valid() {
+        let input = "TRY_FROM";
+        let sixbit = DecSixbit::try_from(input).unwrap();
+        assert_eq!(sixbit.to_string(), input);
+    }
+
+    #[test]
+    fn test_try_from_str_invalid() {
+        let input = "INVALID😤";
+        let result = DecSixbit::try_from(input);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_try_from_bytes_valid() {
+        let input = "BYTES";
+        let sixbit = DecSixbit::new(input).unwrap();
+        let bytes = sixbit.as_bytes();
+        let decoded = DecSixbit::try_from(bytes).unwrap();
+        assert_eq!(sixbit, decoded);
+    }
+
+    #[test]
+    fn test_try_from_vec_bytes() {
+        let input = "VEC_BYTES";
+        let sixbit = DecSixbit::new(input).unwrap();
+        let bytes = sixbit.as_bytes().to_vec();
+        let decoded = DecSixbit::try_from(bytes).unwrap();
+        assert_eq!(sixbit, decoded);
+    }
+
+    #[test]
+    fn test_serde_serialize_deserialize_human_readable() {
+        use serde_json;
+
+        let input = "SERIALIZE";
+        let sixbit = DecSixbit::new(input).unwrap();
+        let serialized = serde_json::to_string(&sixbit).unwrap();
+        assert_eq!(serialized, format!("\"{}\"", input));
+
+        let deserialized: DecSixbit = serde_json::from_str(&serialized).unwrap();
+        assert_eq!(sixbit, deserialized);
+    }
+
+    #[test]
+    fn test_serde_serialize_deserialize_binary() {
+        use bincode;
+
+        let input = "BINARY";
+        let sixbit = DecSixbit::new(input).unwrap();
+        let serialized = bincode::serialize(&sixbit).unwrap();
+        let deserialized: DecSixbit = bincode::deserialize(&serialized).unwrap();
+        assert_eq!(sixbit, deserialized);
+    }
+
+    #[test]
+    fn test_is_empty() {
+        let sixbit = DecSixbit::new("").unwrap();
+        assert!(sixbit.is_empty());
+
+        let sixbit = DecSixbit::new("NON_EMPTY").unwrap();
+        assert!(!sixbit.is_empty());
+    }
+
+    #[test]
+    fn test_len() {
+        let input = "LENGTH";
+        let sixbit = DecSixbit::new(input).unwrap();
+        assert_eq!(sixbit.len(), input.len());
+    }
+
+    #[test]
+    fn test_equality() {
+        let input1 = "EQUAL";
+        let input2 = "EQUAL";
+        let sixbit1 = DecSixbit::new(input1).unwrap();
+        let sixbit2 = DecSixbit::new(input2).unwrap();
+        assert_eq!(sixbit1, sixbit2);
+    }
+
+    #[test]
+    fn test_ordering() {
+        let sixbit_a = DecSixbit::new("AAA").unwrap();
+        let sixbit_b = DecSixbit::new("AAB").unwrap();
+        assert!(sixbit_a < sixbit_b);
+    }
+
+    #[test]
+    fn test_hash() {
+        use std::collections::HashSet;
+
+        let input1 = "HASH1";
+        let input2 = "HASH2";
+        let sixbit1 = DecSixbit::new(input1).unwrap();
+        let sixbit2 = DecSixbit::new(input2).unwrap();
+
+        let mut set = HashSet::new();
+        set.insert(sixbit1.clone());
+        set.insert(sixbit2.clone());
+
+        assert!(set.contains(&sixbit1));
+        assert!(set.contains(&sixbit2));
+    }
+}
