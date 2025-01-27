@@ -234,7 +234,7 @@ impl DecSixbit {
 impl fmt::Display for DecSixbit {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // Use decode_unchecked because the TRAILING_SPACE_MARKER byte might have been added at the end
-        let decoded =  decode_unchecked(&self.bytes, self.len);
+        let decoded = decode_unchecked(&self.bytes, self.len);
         write!(f, "{}", decoded)
     }
 }
