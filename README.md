@@ -6,6 +6,10 @@ The conversion between DEC SIXBIT and ASCII is very simple and fast, making it s
 
 ## Table of Contents
 
+- [Code Specifications](#code-specifications)
+
+  - [DEC SIXBIT Table](#dec-sixbit-table)
+
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -18,6 +22,21 @@ The conversion between DEC SIXBIT and ASCII is very simple and fast, making it s
 - [Examples](#examples)
 - [Testing](#testing)
 - [License](#license)
+
+## Code Specifications
+
+DEC SIXBIT, which was commonly used, represents 64 characters using 6 bits each, covering ASCII codes from 32 to 95 while excluding control characters. This includes uppercase alphabet letters, numbers, spaces, and some symbols.
+
+Conversion to DEC SIXBIT is highly efficient as it only involves subtracting 32 from the byte representation of ASCII characters and removing the top 2 bits. This reduces data size by nearly 25% without sacrificing speed, especially in short strings such as user IDs. (21 characters can be stored in 16 bytes)
+
+### DEC SIXBIT Table
+
+|        | 0       | 1   | 2   | 3   | 4   | 5   | 6   | 7   | 8   | 9   | A   | B   | C    | D   | E    | F   |
+| ------ | ------- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---- | --- | ---- | --- |
+| **0x** | (SPACE) | !   | "   | #   | $   | %   | &   | '   | (   | )   | \*  | +   | ,    | -   | .    | /   |
+| **1x** | 0       | 1   | 2   | 3   | 4   | 5   | 6   | 7   | 8   | 9   | :   | ;   | &lt; | =   | &gt; | ?   |
+| **2x** | @       | A   | B   | C   | D   | E   | F   | G   | H   | I   | J   | K   | L    | M   | N    | O   |
+| **3x** | P       | Q   | R   | S   | T   | U   | V   | W   | X   | Y   | Z   | [   | \    | ]   | ^    | \_  |
 
 ## Features
 
@@ -118,7 +137,7 @@ fn main() -> Result<(), dec_sixbit::Error> {
 `dec-sixbit` defines a custom `Error` enum to handle various error scenarios:
 
 - `InvalidCharacter`: Triggered when the input string contains characters outside the valid SIXBIT range (ASCII 32-95).
-- `IInvalidBytesLength`: Occurs when decoding encounters iconsistent byte length and string length.
+- `InvalidBytesLength`: Occurs when decoding encounters iconsistent byte length and string length.
 
 ### Example
 
