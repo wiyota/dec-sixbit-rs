@@ -26,20 +26,9 @@ use crate::{Error, ASCII_OFFSET, MASK_FOUR_BITS, MASK_SIX_BITS, MASK_TWO_BITS, S
 /// assert_eq!(decoded_string, input);
 /// ```
 pub fn decode(bytes: &[u8], len: usize) -> Result<String, Error> {
-    let bytes_len = bytes.len();
-
-    if bytes_len == 0 {
-        if len == 0 {
-            return Ok(String::new());
-        } else {
-            return Err(Error::InvalidBytesLength);
-        }
-    }
-
-    if bytes_len != (len * 6 + 7) / 8 {
+    if bytes.len() != (len * 6 + 7) / 8 {
         return Err(Error::InvalidBytesLength);
     }
-
     Ok(decode_core(bytes, len))
 }
 
@@ -69,14 +58,14 @@ pub fn decode(bytes: &[u8], len: usize) -> Result<String, Error> {
 /// assert_eq!(decoded_string, input);
 /// ```
 pub fn decode_unchecked(bytes: &[u8], len: usize) -> String {
-    if len == 0 {
-        return String::new();
-    }
-
     decode_core(bytes, len)
 }
 
 fn decode_core(bytes: &[u8], len: usize) -> String {
+    if len == 0 {
+        return String::new();
+    }
+
     let mut result = Vec::with_capacity(len);
     let full_chunks = len / 4;
     let remaining_chars = len % 4;
