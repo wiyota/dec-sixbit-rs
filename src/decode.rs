@@ -1,7 +1,7 @@
 //! Functions for decoding DEC SIXBIT-encoded bytes back into strings.
 //!
-//! This module provides both safe and unsafe decoding functions. The safe functions perform validation
-//! to ensure all SIXBIT values are within the valid range, while the unsafe functions assume the input
+//! This module provides both checked and unchecked decoding functions. The safe functions perform validation
+//! to ensure all SIXBIT values are within the valid range, while the unchecked functions assume the input
 //! is already valid for increased performance.
 
 use crate::{Error, ASCII_OFFSET, MASK_FOUR_BITS, MASK_SIX_BITS, MASK_TWO_BITS, SHIFT_FOUR_BITS, SHIFT_SIX_BITS, SHIFT_TWO_BITS};
@@ -54,7 +54,7 @@ pub fn decode(bytes: &[u8], len: usize) -> Result<String, Error> {
 ///
 /// let input = "HELLO";
 /// let (encoded_bytes, length) = encode(input).unwrap();
-/// let decoded_string = unsafe { decode_unchecked(&encoded_bytes, length) };
+/// let decoded_string = decode_unchecked(&encoded_bytes, length);
 /// assert_eq!(decoded_string, input);
 /// ```
 pub fn decode_unchecked(bytes: &[u8], len: usize) -> String {

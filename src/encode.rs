@@ -1,7 +1,7 @@
 //! Functions for encoding strings into DEC SIXBIT format.
 //!
-//! This module provides both safe and unsafe encoding functions. The safe functions perform validation
-//! to ensure all characters are within the valid SIXBIT range, while the unsafe functions assume the input
+//! This module provides both checked and unchecked encoding functions. The safe functions perform validation
+//! to ensure all characters are within the valid SIXBIT range, while the unchecked functions assume the input
 //! is already valid for increased performance.
 
 use crate::{Error, MASK_FOUR_BITS, MASK_TWO_BITS, ASCII_OFFSET, SHIFT_TWO_BITS, SHIFT_FOUR_BITS, SHIFT_SIX_BITS};
@@ -135,7 +135,7 @@ pub fn encode(str: &str) -> Result<(Vec<u8>, usize), Error> {
 /// use dec_sixbit::encode_unchecked;
 ///
 /// let input = "HELLO";
-/// let (encoded_bytes, length) = unsafe { encode_unchecked(input) };
+/// let (encoded_bytes, length) = encode_unchecked(input);
 /// ```
 pub fn encode_unchecked(str: &str) -> (Vec<u8>, usize) {
     let len = str.len();
@@ -322,9 +322,9 @@ mod tests {
     #[test]
     fn test_encode_unchecked_valid_input() {
         let input = "ABCD";
-        let (safe_encoded, _) = encode(input).expect("Safe encode should succeed for valid input");
-        let (unsafe_encoded, _) = encode_unchecked(input);
-        assert_eq!(safe_encoded, unsafe_encoded, "Unchecked encoding should match safe encoding for valid input");
+        let (checked_encoded, _) = encode(input).expect("Safe encode should succeed for valid input");
+        let (unchecked_encoded, _) = encode_unchecked(input);
+        assert_eq!(checked_encoded, unchecked_encoded, "Unchecked encoding should match safe encoding for valid input");
     }
 
     #[test]
@@ -338,13 +338,13 @@ mod tests {
     #[test]
     fn test_encode_unchecked_large_input() {
         let input = "THEQUICKBROWNFOXJUMPSOVERTHELAZYDOG_12345";
-        let (safe_encoded, len_safe) = encode(input).expect("Safe encode should succeed for large input");
-        let (unsafe_encoded, len_unsafe) = {
+        let (checked_encoded, len_checked) = encode(input).expect("Safe encode should succeed for large input");
+        let (unchecked_encoded, len_unchecked) = {
             let (bytes, len) = encode_unchecked(input);
             (bytes, len)
         };
-        assert_eq!(safe_encoded, unsafe_encoded, "Unchecked encoding should match safe encoding for large input");
-        assert_eq!(len_safe, len_unsafe, "Lengths should match for large input");
+        assert_eq!(checked_encoded, unchecked_encoded, "Unchecked encoding should match safe encoding for large input");
+        assert_eq!(len_checked, len_unchecked, "Lengths should match for large input");
     }
 
     #[test]
@@ -380,18 +380,18 @@ mod tests {
     fn test_encode_unchecked_two_characters() {
         let input = "AB"; // ASCII 65, 66
         // Confirm that encode_unchecked produces the same result after safely encoding
-        let (safe_encoded, _) = encode(input).expect("Safe encode should succeed for two characters");
-        let (unsafe_encoded, _) = encode_unchecked(input);
-        assert_eq!(safe_encoded, unsafe_encoded, "Unchecked encoding should match safe encoding for two characters");
+        let (checked_encoded, _) = encode(input).expect("Safe encode should succeed for two characters");
+        let (unchecked_encoded, _) = encode_unchecked(input);
+        assert_eq!(checked_encoded, unchecked_encoded, "Unchecked encoding should match safe encoding for two characters");
     }
 
     #[test]
     fn test_encode_unchecked_three_characters() {
         let input = "ABC"; // ASCII 65, 66, 67
         // Confirm that encode_unchecked produces the same result after safely encoding
-        let (safe_encoded, _) = encode(input).expect("Safe encode should succeed for three characters");
-        let (unsafe_encoded, _) = encode_unchecked(input);
-        assert_eq!(safe_encoded, unsafe_encoded, "Unchecked encoding should match safe encoding for three characters");
+        let (checked_encoded, _) = encode(input).expect("Safe encode should succeed for three characters");
+        let (unchecked_encoded, _) = encode_unchecked(input);
+        assert_eq!(checked_encoded, unchecked_encoded, "Unchecked encoding should match safe encoding for three characters");
     }
 
     #[test]
@@ -420,12 +420,12 @@ mod tests {
         ];
 
         for (input, expected, len) in cases {
-            let (safe_encoded, encoded_len_safe) = encode(input).expect("Safe encode should succeed");
-            let (unsafe_encoded, encoded_len_unsafe) = encode_unchecked(input);
-            assert_eq!(safe_encoded, expected, "Safe encoding does not match expected for input '{}'", input);
-            assert_eq!(unsafe_encoded, expected, "Unchecked encoding does not match expected for input '{}'", input);
-            assert_eq!(encoded_len_safe, len, "Length does not match expected value for input '{}'", input);
-            assert_eq!(encoded_len_unsafe, len, "Length should be correct for input '{}'", input);
+            let (checked_encoded, encoded_len_checked) = encode(input).expect("Safe encode should succeed");
+            let (unchecked_encoded, encoded_len_unchecked) = encode_unchecked(input);
+            assert_eq!(checked_encoded, expected, "Safe encoding does not match expected for input '{}'", input);
+            assert_eq!(unchecked_encoded, expected, "Unchecked encoding does not match expected for input '{}'", input);
+            assert_eq!(encoded_len_checked, len, "Length does not match expected value for input '{}'", input);
+            assert_eq!(encoded_len_unchecked, len, "Length should be correct for input '{}'", input);
         }
     }
 }

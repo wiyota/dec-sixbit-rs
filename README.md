@@ -41,7 +41,7 @@ Conversion to DEC SIXBIT is highly efficient as it only involves subtracting 32 
 ## Features
 
 - **Efficient Encoding & Decoding**: Convert between standard UTF-8 strings and the compact DEC SIXBIT format.
-- **Safety and Performance**: Offers both safe and unsafe encoding/decoding functions for flexibility.
+- **Safety and Performance**: Offers both checked and unchecked encoding/decoding functions for flexibility.
 - **Struct API**: Provides a `DecSixbit` struct for a more encapsulated and feature-rich API (enabled via the default `with-struct` feature).
 - **Comprehensive Testing**: Includes a suite of tests to ensure reliability and correctness.
 - **Error Handling**: Clearly defined error types for invalid input data.
