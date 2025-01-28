@@ -69,79 +69,63 @@ fn decode_core(bytes: &[u8], len: usize) -> String {
         return String::new();
     }
 
-    let mut result = Vec::with_capacity(len);
+    let mut result = vec![0u8; len];
     let full_chunks = len / 4;
     let remaining_chars = len % 4;
 
-    for chunk_idx in 0..full_chunks {
-        let byte_idx = chunk_idx * 3;
+    let bytes_ptr = bytes.as_ptr();
+    let result_ptr: *mut u8 = result.as_mut_ptr();
 
-        unsafe {
-            // Directly access the three bytes without bounds checking
-            let b0 = *bytes.get_unchecked(byte_idx) as u32;
-            let b1 = *bytes.get_unchecked(byte_idx + 1) as u32;
-            let b2 = *bytes.get_unchecked(byte_idx + 2) as u32;
+    unsafe {
+        // Process full chunks
+        for chunk_idx in 0..full_chunks {
+            let byte_idx = chunk_idx * 3;
+            let str_idx = chunk_idx * 4;
 
-            // Combine the three bytes into a single 24-bit number
-            let combined = (b0 << 16) | (b1 << 8) | b2;
+            // Load 3 bytes into a 32-bit integer and perform bit operations in a single step
+            let bytes = ((*bytes_ptr.add(byte_idx) as u32) << 16)
+                      | ((*bytes_ptr.add(byte_idx + 1) as u32) << 8)
+                      | (*bytes_ptr.add(byte_idx + 2) as u32);
 
-            // Extract the four 6-bit segments
-            let a = (((combined >> 18) as u8) & MASK_SIX_BITS) + ASCII_OFFSET;
-            let b = (((combined >> 12) as u8) & MASK_SIX_BITS) + ASCII_OFFSET;
-            let c = (((combined >> 6) as u8) & MASK_SIX_BITS) + ASCII_OFFSET;
-            let d = ((combined as u8) & MASK_SIX_BITS) + ASCII_OFFSET;
+            // Extract 6-bit values and add ASCII offset in one operation per byte
+            let char1 = ((bytes >> 18) as u8 & MASK_SIX_BITS) + ASCII_OFFSET;
+            let char2 = ((bytes >> 12) as u8 & MASK_SIX_BITS) + ASCII_OFFSET;
+            let char3 = ((bytes >> 6) as u8 & MASK_SIX_BITS) + ASCII_OFFSET;
+            let char4 = (bytes as u8 & MASK_SIX_BITS) + ASCII_OFFSET;
 
-            // Push the decoded characters into the result vector
-            result.extend(&[a, b, c, d]);
+            // Store results with sequential memory access
+            *result_ptr.add(str_idx) = char1;
+            *result_ptr.add(str_idx + 1) = char2;
+            *result_ptr.add(str_idx + 2) = char3;
+            *result_ptr.add(str_idx + 3) = char4;
         }
-    }
 
-    // Handle remaining characters
-    if remaining_chars > 0 {
-        let start_byte = full_chunks * 3;
-        let remaining_bytes = &bytes[start_byte..];
-
+        // Process remaining characters
         match remaining_chars {
+            0 => {},
             1 => {
-                unsafe {
-                    result.push((*remaining_bytes.get_unchecked(0) >> 2) + ASCII_OFFSET);
-                }
+                let byte0 = *bytes_ptr.add(full_chunks * 3);
+                let char1 = (byte0 >> 2) + ASCII_OFFSET;
+                *result_ptr.add(full_chunks * 4) = char1;
             },
             2 => {
-                unsafe {
-                    // Directly access the two bytes without bounds checking
-                    let b0 = *remaining_bytes.get_unchecked(0) as u16;
-                    let b1 = *remaining_bytes.get_unchecked(1) as u16;
-
-                    // Combine the two bytes into a single 16-bit number
-                    let combined = (b0 << 8) | b1;
-
-                    // Extract the two 6-bit segments
-                    let a = (((combined >> 10) as u8) & MASK_SIX_BITS) + ASCII_OFFSET;
-                    let b = (((combined >> 4) as u8) & MASK_SIX_BITS) + ASCII_OFFSET;
-
-                    // Push the decoded characters into the result vector
-                    result.extend(&[a, b]);
-                }
+                let byte0 = *bytes_ptr.add(full_chunks * 3);
+                let byte1 = *bytes_ptr.add(full_chunks * 3 + 1);
+                let char1 = (byte0 >> 2) + ASCII_OFFSET;
+                let char2 = (((byte0 & 0b00000011) << 4) | (byte1 >> 4)) + ASCII_OFFSET;
+                *result_ptr.add(full_chunks * 4) = char1;
+                *result_ptr.add(full_chunks * 4 + 1) = char2;
             },
             3 => {
-                unsafe {
-                    // Directly access the three bytes without bounds checking
-                    let b0 = *remaining_bytes.get_unchecked(0) as u32;
-                    let b1 = *remaining_bytes.get_unchecked(1) as u32;
-                    let b2 = *remaining_bytes.get_unchecked(2) as u32;
-
-                    // Combine the three bytes into a single 24-bit number
-                    let combined = (b0 << 16) | (b1 << 8) | b2;
-
-                    // Extract the two 6-bit segments
-                    let a = (((combined >> 18) as u8) & MASK_SIX_BITS) + ASCII_OFFSET;
-                    let b = (((combined >> 12) as u8) & MASK_SIX_BITS) + ASCII_OFFSET;
-                    let c = (((combined >> 6) as u8) & MASK_SIX_BITS) + ASCII_OFFSET;
-
-                    // Push the decoded characters into the result vector
-                    result.extend(&[a, b, c]);
-                }
+                let byte0 = *bytes_ptr.add(full_chunks * 3);
+                let byte1 = *bytes_ptr.add(full_chunks * 3 + 1);
+                let byte2 = *bytes_ptr.add(full_chunks * 3 + 2);
+                let char1 = (byte0 >> 2) + ASCII_OFFSET;
+                let char2 = (((byte0 & 0b00000011) << 4) | (byte1 >> 4)) + ASCII_OFFSET;
+                let char3 = (((byte1 & 0b00001111) << 2) | (byte2 >> 6)) + ASCII_OFFSET;
+                *result_ptr.add(full_chunks * 4) = char1;
+                *result_ptr.add(full_chunks * 4 + 1) = char2;
+                *result_ptr.add(full_chunks * 4 + 2) = char3;
             },
             _ => unreachable!(),
         }
