@@ -23,6 +23,7 @@ use crate::{Error, MASK_FOUR_BITS, MASK_TWO_BITS, ASCII_OFFSET, SHIFT_TWO_BITS, 
 /// let input = "HELLO";
 /// let (encoded_bytes, length) = encode(input).unwrap();
 /// ```
+#[inline(always)]
 pub fn encode(str: &str) -> Result<(Vec<u8>, usize), Error> {
     // Check if input string contains only ASCII characters
     if !str.is_ascii() {
@@ -137,6 +138,7 @@ pub fn encode(str: &str) -> Result<(Vec<u8>, usize), Error> {
 /// let input = "HELLO";
 /// let (encoded_bytes, length) = encode_unchecked(input);
 /// ```
+#[inline(always)]
 pub fn encode_unchecked(str: &str) -> (Vec<u8>, usize) {
     let len = str.len();
     // Every 4 characters need 3 bytes, round up

@@ -25,6 +25,7 @@ use crate::{Error, ASCII_OFFSET, MASK_FOUR_BITS, MASK_SIX_BITS, MASK_TWO_BITS, S
 /// let decoded_string = decode(&encoded_bytes, length).unwrap();
 /// assert_eq!(decoded_string, input);
 /// ```
+#[inline(always)]
 pub fn decode(bytes: &[u8], len: usize) -> Result<String, Error> {
     if bytes.len() != (len * 6 + 7) / 8 {
         return Err(Error::InvalidBytesLength);
@@ -57,10 +58,12 @@ pub fn decode(bytes: &[u8], len: usize) -> Result<String, Error> {
 /// let decoded_string = decode_unchecked(&encoded_bytes, length);
 /// assert_eq!(decoded_string, input);
 /// ```
+#[inline(always)]
 pub fn decode_unchecked(bytes: &[u8], len: usize) -> String {
     decode_core(bytes, len)
 }
 
+#[inline(always)]
 fn decode_core(bytes: &[u8], len: usize) -> String {
     if len == 0 {
         return String::new();
@@ -73,10 +76,15 @@ fn decode_core(bytes: &[u8], len: usize) -> String {
     for chunk_idx in 0..full_chunks {
         let byte_idx = chunk_idx * 3;
 
-        push_first_six_bits(bytes, byte_idx, &mut result);
-        push_second_six_bits(bytes, byte_idx, &mut result);
-        push_third_six_bits(bytes, byte_idx, &mut result);
-        push_fourth_six_bits(bytes, byte_idx, &mut result);
+        let a = bytes[byte_idx] >> SHIFT_TWO_BITS;
+        let b = ((bytes[byte_idx] & MASK_TWO_BITS) << SHIFT_FOUR_BITS) | (bytes[byte_idx + 1] >> SHIFT_FOUR_BITS);
+        let c = ((bytes[byte_idx + 1] & MASK_FOUR_BITS) << SHIFT_TWO_BITS) | (bytes[byte_idx + 2] >> SHIFT_SIX_BITS);
+        let d = bytes[byte_idx + 2] & MASK_SIX_BITS;
+
+        result.push(a + ASCII_OFFSET);
+        result.push(b + ASCII_OFFSET);
+        result.push(c + ASCII_OFFSET);
+        result.push(d + ASCII_OFFSET);
     }
 
     // Handle remaining characters
@@ -86,16 +94,16 @@ fn decode_core(bytes: &[u8], len: usize) -> String {
 
         match remaining_chars {
             1 => {
-                push_first_six_bits(remaining_bytes, 0, &mut result);
+                result.push((remaining_bytes[0] >> SHIFT_TWO_BITS) + ASCII_OFFSET);
             },
             2 => {
-                push_first_six_bits(remaining_bytes, 0, &mut result);
-                push_second_six_bits(remaining_bytes, 0, &mut result);
+                result.push((remaining_bytes[0] >> SHIFT_TWO_BITS) + ASCII_OFFSET);
+                result.push((((remaining_bytes[0] & MASK_TWO_BITS) << SHIFT_FOUR_BITS) | (remaining_bytes[1] >> SHIFT_FOUR_BITS)) + ASCII_OFFSET);
             },
             3 => {
-                push_first_six_bits(remaining_bytes, 0, &mut result);
-                push_second_six_bits(remaining_bytes, 0, &mut result);
-                push_third_six_bits(remaining_bytes, 0, &mut result);
+                result.push((remaining_bytes[0] >> SHIFT_TWO_BITS) + ASCII_OFFSET);
+                result.push((((remaining_bytes[0] & MASK_TWO_BITS) << SHIFT_FOUR_BITS) | (remaining_bytes[1] >> SHIFT_FOUR_BITS)) + ASCII_OFFSET);
+                result.push((((remaining_bytes[1] & MASK_FOUR_BITS) << SHIFT_TWO_BITS) | (remaining_bytes[2] >> SHIFT_SIX_BITS)) + ASCII_OFFSET);
             },
             _ => unreachable!(),
         }
@@ -103,30 +111,6 @@ fn decode_core(bytes: &[u8], len: usize) -> String {
 
     // SAFETY: Each byte of result is guaranteed to fit to any ASCII printable character
     unsafe { String::from_utf8_unchecked(result) }
-}
-
-#[inline]
-fn push_first_six_bits(bytes: &[u8], index: usize, vec: &mut Vec<u8>) {
-    let val = bytes[index] >> SHIFT_TWO_BITS;
-    vec.push(val + ASCII_OFFSET);
-}
-
-#[inline]
-fn push_second_six_bits(bytes: &[u8], index: usize, vec: &mut Vec<u8>) {
-    let val = ((bytes[index] & MASK_TWO_BITS) << SHIFT_FOUR_BITS) | (bytes[index + 1] >> SHIFT_FOUR_BITS);
-    vec.push(val + ASCII_OFFSET);
-}
-
-#[inline]
-fn push_third_six_bits(bytes: &[u8], index: usize, vec: &mut Vec<u8>) {
-    let val = ((bytes[index + 1] & MASK_FOUR_BITS) << SHIFT_TWO_BITS) | (bytes[index + 2] >> SHIFT_SIX_BITS);
-    vec.push(val + ASCII_OFFSET);
-}
-
-#[inline]
-fn push_fourth_six_bits(bytes: &[u8], index: usize, vec: &mut Vec<u8>) {
-    let val = bytes[index + 2] & MASK_SIX_BITS;
-    vec.push(val + ASCII_OFFSET);
 }
 
 #[cfg(test)]

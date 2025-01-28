@@ -42,6 +42,7 @@ impl DecSixbit {
     ///
     /// let sixbit = DecSixbit::new("HELLO").unwrap();
     /// ```
+    #[inline(always)]
     pub fn new(str: &str) -> Result<Self, Error> {
         let (mut bytes, len) = encode(str)?;
         // Check if TRAILING_SPACE_MARKER needs to be added
@@ -64,7 +65,7 @@ impl DecSixbit {
     /// let sixbit = DecSixbit::new("HELLO").unwrap();
     /// let encoded = sixbit.as_bytes();
     /// ```
-    #[inline]
+    #[inline(always)]
     pub fn as_bytes(&self) -> &[u8] {
         &self.bytes
     }
@@ -82,7 +83,7 @@ impl DecSixbit {
     /// let sixbit = DecSixbit::new("HELLO").unwrap();
     /// assert_eq!(sixbit.len(), 5);
     /// ```
-    #[inline]
+    #[inline(always)]
     pub fn len(&self) -> usize {
         self.len
     }
@@ -100,7 +101,7 @@ impl DecSixbit {
     /// let sixbit = DecSixbit::new("").unwrap();
     /// assert!(sixbit.is_empty());
     /// ```
-    #[inline]
+    #[inline(always)]
     pub fn is_empty(&self) -> bool {
         self.len == 0
     }
@@ -113,6 +114,7 @@ impl DecSixbit {
     /// # Returns
     /// - `Ok(Self)` if the slice is successfully parsed.
     /// - `Err(Error)` if the slice has an invalid format or contains invalid data.
+    #[inline(always)]
     pub fn try_from_slice(bytes: &[u8]) -> Result<Self, Error> {
         let num_full_blocks = bytes.len() / 3;
         let num_remain_bytes = bytes.len() % 3;
@@ -142,6 +144,7 @@ impl DecSixbit {
     ///
     /// # Panics
     /// - Panics if the slice has an invalid format or contains invalid data.
+    #[inline(always)]
     pub fn from_slice(bytes: &[u8]) -> Self {
         Self::try_from_slice(bytes).unwrap()
     }
@@ -232,6 +235,7 @@ impl DecSixbit {
 }
 
 impl fmt::Display for DecSixbit {
+    #[inline(always)]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // Use decode_unchecked because the TRAILING_SPACE_MARKER byte might have been added at the end
         let decoded = decode_unchecked(&self.bytes, self.len);
