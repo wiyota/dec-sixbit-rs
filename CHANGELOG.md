@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.1.3] - 2025-01-28
+
+### Changed
+
+- Improved performance of encode and decode operations.
+
 ## [0.1.2] - 2025-01-27
 
 ### Added
