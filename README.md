@@ -6,22 +6,25 @@ The conversion between DEC SIXBIT and ASCII is very simple and fast, making it s
 
 ## Table of Contents
 
-- [Code Specifications](#code-specifications)
-
-  - [DEC SIXBIT Table](#dec-sixbit-table)
-
-- [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
-
-  - [Encoding](#encoding)
-  - [Decoding](#decoding)
-  - [Using the `DecSixbit` Struct API](#using-the-decsixbit-struct-api)
-
-- [Error Handling](#error-handling)
-- [Examples](#examples)
-- [Testing](#testing)
-- [License](#license)
+- [dec-sixbit-rs](#dec-sixbit-rs)
+  - [Table of Contents](#table-of-contents)
+  - [Code Specifications](#code-specifications)
+    - [DEC SIXBIT Table](#dec-sixbit-table)
+  - [Features](#features)
+  - [Installation](#installation)
+  - [Usage](#usage)
+    - [Encoding](#encoding)
+      - [Unchecked Encoding](#unchecked-encoding)
+    - [Decoding](#decoding)
+      - [Unchecked Decoding](#unchecked-decoding)
+    - [Using the `DecSixbit` Struct API](#using-the-decsixbit-struct-api)
+  - [Error Handling](#error-handling)
+    - [Example](#example)
+  - [Examples](#examples)
+    - [Encoding and Decoding](#encoding-and-decoding)
+    - [Using the `DecSixbit` Struct](#using-the-decsixbit-struct)
+  - [Testing](#testing)
+  - [License](#license)
 
 ## Code Specifications
 
