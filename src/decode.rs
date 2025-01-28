@@ -4,7 +4,7 @@
 //! to ensure all SIXBIT values are within the valid range, while the unchecked functions assume the input
 //! is already valid for increased performance.
 
-use crate::{Error, ASCII_OFFSET, MASK_FOUR_BITS, MASK_SIX_BITS, MASK_TWO_BITS, SHIFT_FOUR_BITS, SHIFT_SIX_BITS, SHIFT_TWO_BITS};
+use crate::{Error, ASCII_OFFSET, MASK_SIX_BITS};
 
 /// This function converts a slice of SIXBIT-encoded bytes into the original string based on the provided length.
 ///
@@ -76,15 +76,24 @@ fn decode_core(bytes: &[u8], len: usize) -> String {
     for chunk_idx in 0..full_chunks {
         let byte_idx = chunk_idx * 3;
 
-        let a = bytes[byte_idx] >> SHIFT_TWO_BITS;
-        let b = ((bytes[byte_idx] & MASK_TWO_BITS) << SHIFT_FOUR_BITS) | (bytes[byte_idx + 1] >> SHIFT_FOUR_BITS);
-        let c = ((bytes[byte_idx + 1] & MASK_FOUR_BITS) << SHIFT_TWO_BITS) | (bytes[byte_idx + 2] >> SHIFT_SIX_BITS);
-        let d = bytes[byte_idx + 2] & MASK_SIX_BITS;
+        unsafe {
+            // Directly access the three bytes without bounds checking
+            let b0 = *bytes.get_unchecked(byte_idx) as u32;
+            let b1 = *bytes.get_unchecked(byte_idx + 1) as u32;
+            let b2 = *bytes.get_unchecked(byte_idx + 2) as u32;
 
-        result.push(a + ASCII_OFFSET);
-        result.push(b + ASCII_OFFSET);
-        result.push(c + ASCII_OFFSET);
-        result.push(d + ASCII_OFFSET);
+            // Combine the three bytes into a single 24-bit number
+            let combined = (b0 << 16) | (b1 << 8) | b2;
+
+            // Extract the four 6-bit segments
+            let a = (((combined >> 18) as u8) & MASK_SIX_BITS) + ASCII_OFFSET;
+            let b = (((combined >> 12) as u8) & MASK_SIX_BITS) + ASCII_OFFSET;
+            let c = (((combined >> 6) as u8) & MASK_SIX_BITS) + ASCII_OFFSET;
+            let d = ((combined as u8) & MASK_SIX_BITS) + ASCII_OFFSET;
+
+            // Push the decoded characters into the result vector
+            result.extend(&[a, b, c, d]);
+        }
     }
 
     // Handle remaining characters
@@ -94,16 +103,45 @@ fn decode_core(bytes: &[u8], len: usize) -> String {
 
         match remaining_chars {
             1 => {
-                result.push((remaining_bytes[0] >> SHIFT_TWO_BITS) + ASCII_OFFSET);
+                unsafe {
+                    result.push((*remaining_bytes.get_unchecked(0) >> 2) + ASCII_OFFSET);
+                }
             },
             2 => {
-                result.push((remaining_bytes[0] >> SHIFT_TWO_BITS) + ASCII_OFFSET);
-                result.push((((remaining_bytes[0] & MASK_TWO_BITS) << SHIFT_FOUR_BITS) | (remaining_bytes[1] >> SHIFT_FOUR_BITS)) + ASCII_OFFSET);
+                unsafe {
+                    // Directly access the two bytes without bounds checking
+                    let b0 = *remaining_bytes.get_unchecked(0) as u16;
+                    let b1 = *remaining_bytes.get_unchecked(1) as u16;
+
+                    // Combine the two bytes into a single 16-bit number
+                    let combined = (b0 << 8) | b1;
+
+                    // Extract the two 6-bit segments
+                    let a = (((combined >> 10) as u8) & MASK_SIX_BITS) + ASCII_OFFSET;
+                    let b = (((combined >> 4) as u8) & MASK_SIX_BITS) + ASCII_OFFSET;
+
+                    // Push the decoded characters into the result vector
+                    result.extend(&[a, b]);
+                }
             },
             3 => {
-                result.push((remaining_bytes[0] >> SHIFT_TWO_BITS) + ASCII_OFFSET);
-                result.push((((remaining_bytes[0] & MASK_TWO_BITS) << SHIFT_FOUR_BITS) | (remaining_bytes[1] >> SHIFT_FOUR_BITS)) + ASCII_OFFSET);
-                result.push((((remaining_bytes[1] & MASK_FOUR_BITS) << SHIFT_TWO_BITS) | (remaining_bytes[2] >> SHIFT_SIX_BITS)) + ASCII_OFFSET);
+                unsafe {
+                    // Directly access the three bytes without bounds checking
+                    let b0 = *remaining_bytes.get_unchecked(0) as u32;
+                    let b1 = *remaining_bytes.get_unchecked(1) as u32;
+                    let b2 = *remaining_bytes.get_unchecked(2) as u32;
+
+                    // Combine the three bytes into a single 24-bit number
+                    let combined = (b0 << 16) | (b1 << 8) | b2;
+
+                    // Extract the two 6-bit segments
+                    let a = (((combined >> 18) as u8) & MASK_SIX_BITS) + ASCII_OFFSET;
+                    let b = (((combined >> 12) as u8) & MASK_SIX_BITS) + ASCII_OFFSET;
+                    let c = (((combined >> 6) as u8) & MASK_SIX_BITS) + ASCII_OFFSET;
+
+                    // Push the decoded characters into the result vector
+                    result.extend(&[a, b, c]);
+                }
             },
             _ => unreachable!(),
         }
